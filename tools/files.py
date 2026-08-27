@@ -7,6 +7,8 @@ Strictly blocks arbitrary or destructive system file deletion.
 import os
 import sys
 import shutil
+import tempfile
+import subprocess
 import logging
 import asyncio
 from typing import Optional, List, Dict, Any
@@ -59,15 +61,16 @@ def perform_open_file(filepath: str) -> str:
 
     # Validate path is within user directory or safe temp
     user_home = os.path.expanduser("~")
-    if not abs_path.startswith(user_home) and not abs_path.startswith(os.getenv("TEMP", "C:\\Windows\\Temp")):
+    temp_dir = tempfile.gettempdir()
+    if not abs_path.startswith(user_home) and not abs_path.startswith(temp_dir):
         return f"Access Denied: Opening files outside user profile directory is restricted for security."
 
     try:
         if sys.platform == "win32":
             os.startfile(abs_path)
+            return f"Opened file '{os.path.basename(abs_path)}'."
         else:
-            subprocess.Popen(["xdg-open", abs_path])
-        return f"Opened file '{os.path.basename(abs_path)}'."
+            return f"File '{os.path.basename(abs_path)}' exists on cloud server at path '{abs_path}'."
     except Exception as e:
         logger.error(f"Error opening file '{abs_path}': {e}")
         return f"Could not open file: {e}"

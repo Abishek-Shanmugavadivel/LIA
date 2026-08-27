@@ -3,6 +3,7 @@ Desktop Device Abstraction for LIA (Phase 7 + Phase 8)
 Represents the local or remote Windows/desktop workstation and its tool capabilities.
 """
 
+import platform
 import psutil
 from devices.registry import get_device_registry
 from tools.system import perform_get_system_info
@@ -30,7 +31,7 @@ class DesktopDevice:
             device_id=self.device_id,
             name=self.name,
             device_type="desktop",
-            platform="Windows",
+            platform=platform.system(),
             status="connected",
             battery=battery_level,
             network="Ethernet/Wi-Fi",

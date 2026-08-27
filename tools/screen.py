@@ -9,9 +9,22 @@ import tempfile
 import logging
 import asyncio
 from typing import Optional, Dict, Any
-from PIL import Image, ImageGrab
-import pygetwindow as gw
+from PIL import Image
 from livekit.agents import llm
+
+IS_WINDOWS = sys.platform == "win32"
+if IS_WINDOWS:
+    try:
+        from PIL import ImageGrab
+    except Exception:
+        ImageGrab = None
+    try:
+        import pygetwindow as gw
+    except Exception:
+        gw = None
+else:
+    ImageGrab = None
+    gw = None
 
 logger = logging.getLogger("lia-tools-screen")
 
@@ -25,6 +38,9 @@ def capture_desktop_screenshot(custom_filename: Optional[str] = None) -> str:
     Synchronous helper to capture the full primary desktop screen.
     Saves to a temporary PNG file and returns the file path.
     """
+    if not IS_WINDOWS:
+        logger.warning("Desktop screen capture is unavailable on non-Windows/cloud platform.")
+        return ""
     filename = custom_filename or "lia_latest_screen.png"
     filepath = os.path.abspath(os.path.join(TEMP_SCREENSHOT_DIR, filename))
 
@@ -65,6 +81,9 @@ def get_active_window_info() -> Dict[str, Any]:
     """
     Retrieves the title, application name, and bounding box of the currently active window.
     """
+    if not IS_WINDOWS or not gw:
+        return {"title": "Unknown / Non-Windows Server", "left": 0, "top": 0, "width": 1920, "height": 1080}
+
     try:
         active_win = gw.getActiveWindow()
         if active_win and active_win.title:
@@ -86,9 +105,14 @@ def perform_analyze_screen(prompt: str = "Describe what is currently visible on 
     Analyzes the desktop screen using Google Gemini Vision model.
     Captures a new screenshot if path is not provided.
     """
+    if not IS_WINDOWS and (not screenshot_path or not os.path.exists(screenshot_path)):
+        return "Desktop screen vision analysis is unavailable on non-Windows/cloud platform."
+
     target_path = screenshot_path
     if not target_path or not os.path.exists(target_path):
         target_path = capture_desktop_screenshot()
+        if not target_path:
+            return "Screen capture is unavailable on this platform."
 
     active_info = get_active_window_info()
     active_title = active_info.get("title", "Unknown")

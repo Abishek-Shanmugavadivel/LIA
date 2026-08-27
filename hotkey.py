@@ -4,10 +4,19 @@ Uses pynput to capture global hotkey across Windows without interfering with sta
 Triggers activation / toggle listening mode on first press; interrupts speaking/response on second press.
 """
 
+import sys
 import logging
 import threading
 from typing import Callable, Optional
-from pynput import keyboard
+
+if sys.platform == "win32":
+    try:
+        from pynput import keyboard
+    except Exception:
+        keyboard = None
+else:
+    keyboard = None
+
 from voice.state_machine import get_state_machine, LIAState
 
 logger = logging.getLogger("lia-hotkey")
@@ -39,6 +48,10 @@ class LIAHotkeyManager:
     def start(self, daemon: bool = True):
         """Starts global hotkey listener."""
         if self._is_active:
+            return
+
+        if not keyboard or sys.platform != "win32":
+            logger.info("Global hotkey listener is disabled on non-Windows/headless OS.")
             return
 
         try:

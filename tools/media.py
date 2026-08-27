@@ -9,11 +9,18 @@ import urllib.parse
 import sys
 import os
 import asyncio
-import pyautogui
 from livekit.agents import llm
 
 logger = logging.getLogger("lia-tools-media")
-pyautogui.FAILSAFE = False
+
+if sys.platform == "win32":
+    try:
+        import pyautogui
+        pyautogui.FAILSAFE = False
+    except Exception:
+        pyautogui = None
+else:
+    pyautogui = None
 
 
 def perform_play_music(query: str = None, platform: str = "youtube") -> str:
@@ -42,6 +49,8 @@ def perform_play_music(query: str = None, platform: str = "youtube") -> str:
     try:
         if sys.platform == "win32":
             os.system(f"start {url}")
+        else:
+            logger.info(f"Cloud/Linux backend: Media search URL generated: {url}")
         return desc
     except Exception as e:
         logger.error(f"Error launching media player URL: {e}")
@@ -50,6 +59,8 @@ def perform_play_music(query: str = None, platform: str = "youtube") -> str:
 
 def perform_control_media(action: str) -> str:
     """Synchronous helper for media key commands (play, pause, next, volume up/down, mute)."""
+    if not pyautogui:
+        return "Media key control is unavailable on non-Windows/headless OS."
     act = action.strip().lower()
     
     try:

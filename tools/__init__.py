@@ -12,12 +12,13 @@ Linux / Render:
     Render has no Windows desktop or DISPLAY server.
 """
 
+import sys
 import platform
 import logging
 
 logger = logging.getLogger("lia-tools")
 
-IS_WINDOWS = platform.system().lower() == "windows"
+IS_WINDOWS = sys.platform == "win32"
 
 
 # =========================================================

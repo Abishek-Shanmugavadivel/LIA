@@ -4,6 +4,7 @@ Tracks active connected devices (desktop, mobile, tablet), their telemetry, onli
 """
 
 import time
+import platform
 import threading
 from typing import Dict, Any, List, Optional
 
@@ -22,15 +23,16 @@ class DeviceRegistry:
     def _init_default_devices(self):
         """Initializes default known device slots for Desktop and Mobile."""
         # Auto-register local host desktop
+        sys_plat = platform.system()
         self.register_device(
             device_id="desktop_primary",
             name="Primary Computer",
             device_type="desktop",
-            platform="Windows",
+            platform=sys_plat,
             status="connected",
             battery=100,
             network="Ethernet/Wi-Fi",
-            extra_info={"screen_count": 1, "os": "Windows 11"}
+            extra_info={"screen_count": 1, "os": sys_plat}
         )
 
     def register_device(

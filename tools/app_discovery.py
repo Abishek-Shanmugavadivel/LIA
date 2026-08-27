@@ -8,9 +8,13 @@ import os
 import sys
 import glob
 import time
-import winreg
 import logging
 from typing import Dict, Any, List, Optional
+
+if sys.platform == "win32":
+    import winreg
+else:
+    winreg = None
 
 logger = logging.getLogger("lia-app-discovery")
 
@@ -98,6 +102,8 @@ class ApplicationDiscoveryManager:
     def scan_start_menu(self) -> List[Dict[str, Any]]:
         """Scans Windows Start Menu shortcuts (.lnk files) for installed applications."""
         discovered = []
+        if sys.platform != "win32":
+            return discovered
         start_menu_dirs = [
             r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs",
             os.path.expandvars(r"%APPDATA%\Microsoft\Windows\Start Menu\Programs")

@@ -28,7 +28,7 @@ logger = logging.getLogger("lia-tools-desktop")
 # PLATFORM DETECTION
 # =========================================================
 
-IS_WINDOWS = platform.system().lower() == "windows"
+IS_WINDOWS = sys.platform == "win32"
 
 # pygetwindow is Windows-specific in this project.
 # IMPORTANT:

@@ -10,12 +10,19 @@ import logging
 import asyncio
 import subprocess
 import urllib.parse
-import pyautogui
 from typing import Dict, Any, List, Optional
 from livekit.agents import llm
 
 logger = logging.getLogger("lia-tools-browser-auto")
-pyautogui.FAILSAFE = False
+
+if sys.platform == "win32":
+    try:
+        import pyautogui
+        pyautogui.FAILSAFE = False
+    except Exception:
+        pyautogui = None
+else:
+    pyautogui = None
 
 
 def perform_open_url(url: str) -> str:
@@ -44,6 +51,8 @@ def perform_search_google(query: str) -> str:
 
 def perform_navigate_browser(action: str) -> str:
     """Synchronous helper for browser page navigation (back, forward, refresh, scroll)."""
+    if not pyautogui:
+        return "Browser GUI navigation is unavailable on non-Windows/headless OS."
     act = action.strip().lower()
     try:
         if act in ["back", "go_back", "previous", "previous_page"]:
@@ -70,6 +79,8 @@ def perform_navigate_browser(action: str) -> str:
 
 def perform_tab_action(action: str, tab_index: Optional[int] = None) -> str:
     """Synchronous helper for browser tab actions (new_tab, close_tab, next_tab, previous_tab, switch_tab)."""
+    if not pyautogui:
+        return "Browser tab management is unavailable on non-Windows/headless OS."
     act = action.strip().lower()
     try:
         if act in ["new_tab", "new"]:

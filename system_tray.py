@@ -11,8 +11,14 @@ import threading
 import webbrowser
 from PIL import Image, ImageDraw
 
-import pystray
-from pystray import MenuItem as item, Menu
+if sys.platform == "win32":
+    try:
+        import pystray
+        from pystray import MenuItem as item, Menu
+    except Exception:
+        pystray = None
+else:
+    pystray = None
 
 from process_manager import get_process_manager
 from voice.state_machine import get_state_machine, LIAState
@@ -95,6 +101,10 @@ class LIASystemTray:
             self.icon.title = f"LIA Assistant — {state_str}"
 
     def run(self, daemon: bool = False):
+        if not pystray or sys.platform != "win32":
+            logger.info("System tray integration is disabled on non-Windows/headless OS.")
+            return
+
         menu = Menu(
             item("LIA Online / Status", lambda icon, item: None, enabled=False),
             item("Start LIA", self._on_start),

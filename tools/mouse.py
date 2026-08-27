@@ -3,17 +3,23 @@ Controlled Mouse Control Tools for LIA (Phase 5)
 Handles mouse movement, clicking, double clicking, and right clicking with strict coordinate validation.
 """
 
+import sys
 import logging
 import asyncio
-import pyautogui
 from typing import Optional, Tuple
 from livekit.agents import llm
 
 logger = logging.getLogger("lia-tools-mouse")
 
-# Set PyAutoGUI configuration
-pyautogui.FAILSAFE = False
-pyautogui.PAUSE = 0.1
+if sys.platform == "win32":
+    try:
+        import pyautogui
+        pyautogui.FAILSAFE = False
+        pyautogui.PAUSE = 0.1
+    except Exception:
+        pyautogui = None
+else:
+    pyautogui = None
 
 
 def validate_coordinates(x: int, y: int) -> Tuple[bool, str, int, int]:
@@ -21,6 +27,9 @@ def validate_coordinates(x: int, y: int) -> Tuple[bool, str, int, int]:
     Validates target coordinates against primary screen bounds.
     Returns (is_valid, error_msg_or_ok, bounded_x, bounded_y).
     """
+    if not pyautogui:
+        return False, "Mouse control is unavailable on non-Windows/headless OS.", 0, 0
+
     screen_width, screen_height = pyautogui.size()
 
     if x < 0 or x > screen_width or y < 0 or y > screen_height:

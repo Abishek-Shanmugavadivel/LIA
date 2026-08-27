@@ -11,6 +11,7 @@ import time
 import json
 import logging
 import threading
+from typing import Optional, Dict, Any
 
 # Ensure root project directory is in sys.path for direct python execution
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -289,11 +290,13 @@ class MobileAPIRequestHandler(SimpleHTTPRequestHandler):
         msg = format % args
         logger.debug(mask_secrets(msg))
 
-def run_mobile_server(port: int = 8080, daemon: bool = True) -> HTTPServer:
+def run_mobile_server(port: Optional[int] = None, daemon: bool = True) -> HTTPServer:
     """Starts the HTTP server for mobile tokens and app serving."""
-    server_address = ("", port)
+    if port is None:
+        port = int(os.getenv("PORT", "8080"))
+    server_address = ("0.0.0.0", port)
     httpd = HTTPServer(server_address, MobileAPIRequestHandler)
-    logger.info(f"LIA Mobile Backend Server running at http://localhost:{port}/")
+    logger.info(f"LIA Mobile Backend Server running on 0.0.0.0:{port}")
     
     if daemon:
         thread = threading.Thread(target=httpd.serve_forever, daemon=True)
@@ -302,7 +305,8 @@ def run_mobile_server(port: int = 8080, daemon: bool = True) -> HTTPServer:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    server = run_mobile_server(port=8080, daemon=False)
+    port = int(os.getenv("PORT", "8080"))
+    server = run_mobile_server(port=port, daemon=False)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

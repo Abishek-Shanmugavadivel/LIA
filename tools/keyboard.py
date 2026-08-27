@@ -3,15 +3,23 @@ Controlled Keyboard Automation Tools for LIA (Phase 5)
 Handles text typing, key pressing, and key combination shortcuts with parameter validation.
 """
 
+import sys
 import logging
 import asyncio
-import pyautogui
 from typing import List
 from livekit.agents import llm
 
 logger = logging.getLogger("lia-tools-keyboard")
-pyautogui.FAILSAFE = False
-pyautogui.PAUSE = 0.1
+
+if sys.platform == "win32":
+    try:
+        import pyautogui
+        pyautogui.FAILSAFE = False
+        pyautogui.PAUSE = 0.1
+    except Exception:
+        pyautogui = None
+else:
+    pyautogui = None
 
 # Allowed standard keys for press_key and press_hotkey
 ALLOWED_KEYS = {
@@ -27,6 +35,8 @@ for char in "abcdefghijklmnopqrstuvwxyz0123456789":
 
 def perform_type_text(text: str) -> str:
     """Synchronous helper to type text via PyAutoGUI."""
+    if not pyautogui:
+        return "Keyboard control is unavailable on non-Windows/headless OS."
     cleaned = text.strip()
     if not cleaned:
         return "Text to type was empty."
@@ -42,6 +52,8 @@ def perform_type_text(text: str) -> str:
 
 def perform_press_key(key_name: str) -> str:
     """Synchronous helper to press a single validated key."""
+    if not pyautogui:
+        return "Keyboard control is unavailable on non-Windows/headless OS."
     cleaned = key_name.strip().lower()
 
     if cleaned == "esc":
@@ -66,6 +78,8 @@ def perform_press_hotkey(shortcut: str) -> str:
     Synchronous helper to press key combination shortcut.
     Example: 'ctrl+c', 'ctrl+v', 'alt+tab', 'ctrl+a'.
     """
+    if not pyautogui:
+        return "Keyboard control is unavailable on non-Windows/headless OS."
     cleaned = shortcut.strip().lower()
     raw_keys = [k.strip() for k in cleaned.replace("-", "+").split("+") if k.strip()]
 

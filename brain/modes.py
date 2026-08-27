@@ -82,6 +82,10 @@ def perform_activate_jarvis_mode(mode_name: str) -> str:
 
     logger.info(f"Activating JARVIS Mode: {config['name']}")
 
+    if sys.platform != "win32":
+        logger.info(f"Non-Windows platform ({sys.platform}): Mode set to {config['name']} without GUI launching.")
+        return f"Activated {config['name']} mode. Cloud backend services are ready. (Desktop app launching skipped on cloud server)."
+
     # Launch applications
     for app in config["apps"]:
         try:

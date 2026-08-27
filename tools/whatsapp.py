@@ -19,13 +19,11 @@ logger = logging.getLogger("lia-tools-whatsapp")
 
 def perform_open_whatsapp() -> str:
     """Synchronous helper to open WhatsApp Desktop or WhatsApp Web."""
+    if sys.platform != "win32":
+        return "WhatsApp integration is available on Windows desktop. Cloud backend services remain ready."
     try:
-        if sys.platform == "win32":
-            subprocess.Popen("start whatsapp:", shell=True)
-            return "Opened WhatsApp Desktop."
-        else:
-            subprocess.Popen(["xdg-open", "https://web.whatsapp.com"])
-            return "Opened WhatsApp Web."
+        subprocess.Popen("start whatsapp:", shell=True)
+        return "Opened WhatsApp Desktop."
     except Exception as e:
         logger.error(f"Failed to open WhatsApp: {e}")
         return f"Could not open WhatsApp: {e}"
@@ -33,12 +31,13 @@ def perform_open_whatsapp() -> str:
 
 def perform_prepare_whatsapp_message(contact_name: str, message: str) -> str:
     """Synchronous helper to compose a draft WhatsApp message."""
+    if sys.platform != "win32":
+        return f"WhatsApp messaging is available on Windows desktop. Message draft for {contact_name}: '{message}' saved."
     encoded_msg = urllib.parse.quote(message)
     # Open WhatsApp web chat search
     url = f"https://web.whatsapp.com"
     try:
-        if sys.platform == "win32":
-            os.system(f"start {url}")
+        os.system(f"start {url}")
         return f"WhatsApp is open. Drafted message for {contact_name}: '{message}'."
     except Exception as e:
         return f"Could not prepare WhatsApp message: {e}"

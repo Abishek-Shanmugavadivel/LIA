@@ -245,8 +245,9 @@ async def entrypoint(ctx: agents.JobContext):
 if __name__ == "__main__":
     # Launch Mobile HTTP Token & Telemetry Server on Port 8080
     try:
-        run_mobile_server(port=8080, daemon=True)
-        logger.info("[BOOT] Mobile HTTP Backend Server running on http://localhost:8080")
+        m_port = int(os.getenv("PORT", "8080"))
+        run_mobile_server(port=m_port, daemon=True)
+        logger.info(f"[BOOT] Mobile HTTP Backend Server running on 0.0.0.0:{m_port}")
     except Exception as m_err:
         logger.warning(f"[BOOT] Mobile server auto-start warning: {m_err}")
         

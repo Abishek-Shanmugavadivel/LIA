@@ -5,11 +5,21 @@ Visual Grounding, Screen Change Detection, Action Verification, and Privacy Reda
 """
 
 import os
+import sys
 import re
 import time
 import logging
 from typing import Dict, Any, List, Optional, Tuple
-from PIL import Image, ImageGrab
+from PIL import Image
+
+if sys.platform == "win32":
+    try:
+        from PIL import ImageGrab
+    except Exception:
+        ImageGrab = None
+else:
+    ImageGrab = None
+
 from tools.screen import capture_desktop_screenshot, get_active_window_info
 from tools.tool_result import create_tool_result, verify_file_created
 

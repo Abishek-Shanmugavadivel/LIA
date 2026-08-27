@@ -5,6 +5,7 @@ Memory, News, Reminders, Calendar, and JARVIS Modes actions (supporting English,
 Decomposes compound multi-step JARVIS instructions and enforces security validation.
 """
 
+import sys
 import logging
 import re
 import time
@@ -457,6 +458,10 @@ class LIAOrchestrator:
 
 
         elif p_intent == IntentType.DESKTOP_ACTION:
+            if sys.platform != "win32":
+                logger.info(f"Desktop action requested on non-Windows platform ({sys.platform}). Returning capability notice.")
+                return {"status": "success", "message": "Desktop application control is available when LIA is running on Windows Desktop. Cloud backend services remain operational."}
+
             if "youtube" in step_lower:
                 self.context_mgr.current_application = "YouTube"
                 res = perform_open_url("https://www.youtube.com")
