@@ -10,7 +10,6 @@
     
     <!-- Official LiveKit Client SDK for Browser WebRTC Audio -->
     <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
-    <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.min.js"></script>
 
     <style>
         :root {
@@ -578,7 +577,7 @@
             <div class="glass-panel chat-panel">
                 <div class="chat-history" id="chatHistory">
                     <div class="msg-bubble lia">
-                        Greetings! I am LIA, your JARVIS Voice AI. Click "⚡ Connect LIA" to activate LiveKit WebRTC Voice in English, Tamil, or Tanglish.
+                        Greetings! I am LIA, your JARVIS Voice AI. Hands-free voice assistant is active in English, Tamil, and Tanglish. Listening for your voice...
                     </div>
                 </div>
                 <div class="input-bar">
@@ -637,6 +636,7 @@
             navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW reg failed", err));
         }
 
+        let sdkWaitCount = 0;
         let reconnectAttempts = 0;
         let reconnectTimer = null;
 
@@ -649,14 +649,22 @@
 
             const Livekit = window.LivekitClient || window.livekitclient || window.LiveKit;
             if (!Livekit) {
+                sdkWaitCount++;
+                if (sdkWaitCount < 20) {
+                    console.log('[LIA Mobile] LiveKit SDK loading, retrying in 300ms...');
+                    updateUIState('INITIALIZING', 'INITIALIZING...');
+                    setTimeout(connectToLIA, 300);
+                    return;
+                }
                 updateUIState('ERROR', 'LIVEKIT SDK ERROR');
                 addMessage('lia', 'Error: LiveKit JavaScript SDK failed to load. Check internet connection.');
                 scheduleReconnect();
                 return;
             }
+            sdkWaitCount = 0;
 
             try {
-                updateUIState('CONNECTING', 'LIA CONNECTING...');
+                updateUIState('CONNECTING', 'CONNECTING LIA...');
                 console.log('[LIA Mobile] Requesting token');
 
                 const tokenResp = await fetch('/api/mobile/token', {
@@ -678,7 +686,7 @@
                 }
 
                 console.log('[LIA Mobile] Token received');
-                console.log('[LIA Mobile] Connecting');
+                console.log('[LIA Mobile] Connecting to LiveKit room');
 
                 // Create LiveKit Room instance
                 livekitRoom = new Livekit.Room({
@@ -694,13 +702,12 @@
                 // Attach Event Handlers
                 livekitRoom.on('trackSubscribed', (track, publication, participant) => {
                     console.log('[LIA Mobile] Remote audio subscribed');
-                    console.log('[LIA Mobile] Remote audio track received');
                     if (track.kind === 'audio' || (Livekit.Track && track.kind === Livekit.Track.Kind.Audio)) {
                         const audioEl = track.attach();
                         audioEl.id = 'lia-remote-audio-' + participant.sid;
                         audioEl.autoplay = true;
                         document.body.appendChild(audioEl);
-                        console.log('[LIA Mobile] Remote audio attached');
+                        console.log('[LIA Mobile] Remote audio element attached');
 
                         // Ensure AudioContext is resumed
                         if (audioCtx && audioCtx.state === 'suspended') {
@@ -710,13 +717,14 @@
                         audioEl.play().then(() => {
                             console.log('[LIA Mobile] Remote audio playback started');
                             updateUIState('SPEAKING', 'LIA SPEAKING');
-                            addMessage('lia', 'LIA is speaking...');
                         }).catch(err => {
-                            console.error('[LIA Mobile] Remote audio playback failed:', err);
-                            updateUIState('CONNECTED', 'LIA ACTIVE ● Listening');
-                            addMessage('lia', 'Audio playback blocked by browser. Tap anywhere to enable speaker.');
+                            console.error('[LIA Mobile] Remote audio playback blocked:', err);
+                            updateUIState('LISTENING', 'LIA ACTIVE ● Listening');
                             const resumePlayback = () => {
-                                audioEl.play().then(() => console.log('[LIA Mobile] Remote audio playback started')).catch(e => console.error(e));
+                                audioEl.play().then(() => {
+                                    console.log('[LIA Mobile] Remote audio playback resumed via gesture');
+                                    updateUIState('SPEAKING', 'LIA SPEAKING');
+                                }).catch(e => console.error(e));
                             };
                             document.addEventListener('click', resumePlayback, { once: true });
                             document.addEventListener('touchstart', resumePlayback, { once: true });
@@ -734,7 +742,7 @@
 
                 livekitRoom.on('participantConnected', (participant) => {
                     console.log('[LIA Mobile] Participant connected:', participant.identity);
-                    addMessage('lia', `LIA Agent (${participant.identity}) joined the room.`);
+                    addMessage('lia', `LIA Agent (${participant.identity}) connected.`);
                 });
 
                 livekitRoom.on('participantDisconnected', (participant) => {
@@ -747,35 +755,35 @@
                         reconnectAttempts = 0;
                         updateUIState('LISTENING', 'LIA ACTIVE ● Listening');
                     } else if (state === 'disconnected' || (Livekit.ConnectionState && state === Livekit.ConnectionState.Disconnected)) {
-                        updateUIState('RECONNECTING', 'LIA RECONNECTING...');
+                        updateUIState('RECONNECTING', 'RECONNECTING...');
                         scheduleReconnect();
                     } else if (state === 'reconnecting' || (Livekit.ConnectionState && state === Livekit.ConnectionState.Reconnecting)) {
-                        updateUIState('RECONNECTING', 'LIA RECONNECTING...');
+                        updateUIState('RECONNECTING', 'RECONNECTING...');
                     }
                 });
 
                 livekitRoom.on('disconnected', (reason) => {
                     console.log('[LIA Mobile] Disconnected from room. Reason:', reason);
                     cleanupAudioElements();
-                    updateUIState('RECONNECTING', 'LIA RECONNECTING...');
+                    updateUIState('RECONNECTING', 'RECONNECTING...');
                     scheduleReconnect();
                 });
 
                 // Connect to LiveKit Server
                 await livekitRoom.connect(data.url, data.token);
-                console.log('[LIA Mobile] Connected');
+                console.log('[LIA Mobile] LiveKit room connected successfully');
 
                 // Request microphone permission & publish audio track
-                console.log('[LIA Mobile] Requesting microphone permission...');
+                console.log('[LIA Mobile] Enabling microphone for hands-free audio...');
                 await livekitRoom.localParticipant.setMicrophoneEnabled(true);
-                console.log('[LIA Mobile] Microphone published');
+                console.log('[LIA Mobile] Microphone enabled and published');
 
                 // Setup Web Audio API visualizer from live microphone track
                 setupMicrophoneAudioVisualizer(livekitRoom);
 
                 reconnectAttempts = 0;
                 updateUIState('LISTENING', 'LIA ACTIVE ● Listening');
-                addMessage('lia', 'JARVIS Hands-Free Mode Active. Microphone is listening.');
+                addMessage('lia', 'Hands-Free Voice Active. LIA is listening...');
 
             } catch (err) {
                 console.error('[LIA Mobile] LiveKit connection error:', err);
@@ -787,6 +795,11 @@
         function scheduleReconnect() {
             if (reconnectTimer) clearTimeout(reconnectTimer);
             reconnectAttempts++;
+            if (reconnectAttempts > 15) {
+                console.warn('[LIA Mobile] Max reconnect attempts reached.');
+                updateUIState('ERROR', 'RETRY NEEDED');
+                return;
+            }
             const backoffMs = Math.min(5000, Math.pow(2, reconnectAttempts - 1) * 1000);
             console.log(`[LIA Mobile] Scheduling reconnect attempt #${reconnectAttempts} in ${backoffMs}ms...`);
             reconnectTimer = setTimeout(() => {
@@ -813,6 +826,7 @@
 
         async function toggleLIAConnection() {
             if (connectionStatus === 'DISCONNECTED' || connectionStatus === 'ERROR') {
+                reconnectAttempts = 0;
                 await connectToLIA();
             } else {
                 await disconnectFromLIA();
@@ -858,31 +872,43 @@
             if (status === 'CONNECTED' || status === 'LISTENING') {
                 cssClass += 'listening';
                 if (btnConnect) {
-                    btnConnect.innerHTML = '🔴 Disconnect';
+                    btnConnect.innerHTML = '🟢 Hands-Free Active';
                     btnConnect.classList.add('active');
                 }
-            } else if (status === 'CONNECTING') {
+            } else if (status === 'INITIALIZING' || status === 'CONNECTING') {
                 cssClass += 'thinking';
                 if (btnConnect) {
                     btnConnect.innerHTML = '⏳ Connecting...';
                     btnConnect.classList.remove('active');
                 }
+            } else if (status === 'THINKING') {
+                cssClass += 'thinking';
+                if (btnConnect) {
+                    btnConnect.innerHTML = '⚡ Thinking...';
+                    btnConnect.classList.add('active');
+                }
             } else if (status === 'SPEAKING') {
                 cssClass += 'speaking';
                 if (btnConnect) {
-                    btnConnect.innerHTML = '🔴 Disconnect';
+                    btnConnect.innerHTML = '🔊 LIA Speaking';
                     btnConnect.classList.add('active');
+                }
+            } else if (status === 'RECONNECTING') {
+                cssClass += 'thinking';
+                if (btnConnect) {
+                    btnConnect.innerHTML = '🔄 Reconnecting...';
+                    btnConnect.classList.remove('active');
                 }
             } else if (status === 'ERROR') {
                 cssClass += 'error';
                 if (btnConnect) {
-                    btnConnect.innerHTML = '⚠️ Retry Connect';
+                    btnConnect.innerHTML = '⚠️ Reconnect';
                     btnConnect.classList.remove('active');
                 }
             } else {
                 // DISCONNECTED / IDLE
                 if (btnConnect) {
-                    btnConnect.innerHTML = '⚡ Connect LIA';
+                    btnConnect.innerHTML = '⚡ Connect Voice';
                     btnConnect.classList.remove('active');
                 }
             }
@@ -1073,7 +1099,7 @@
             // Automatically connect to LIA on page load for hands-free mode
             connectToLIA();
 
-            // Add global one-touch unlock listener for browser autoplay restrictions
+            // Add global gesture listener for browser autoplay restrictions
             const unlockAudio = () => {
                 if (audioCtx && audioCtx.state === 'suspended') {
                     audioCtx.resume().then(() => console.log('[LIA Mobile] AudioContext unlocked via user gesture.')).catch(e => console.warn(e));
@@ -1085,6 +1111,11 @@
             document.addEventListener('click', unlockAudio, { once: false });
             document.addEventListener('touchstart', unlockAudio, { once: false });
         };
+
+        // Auto-trigger hands-free connection as soon as DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            connectToLIA();
+        });
     </script>
 </body>
 </html>

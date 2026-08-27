@@ -148,7 +148,7 @@ class MobileAPIRequestHandler(SimpleHTTPRequestHandler):
                     "gemini": {"configured": gemini_configured},
                     "database": {"connected": db_healthy},
                     "device_registry": {"total_devices": len(registry.list_devices())},
-                    "mobile_server": {"running": True, "port": 8080},
+                    "mobile_server": {"running": True, "port": int(os.getenv("PORT", "8080"))},
                     "voice_system": voice_mgr.get_current_voice()
                 }
             }
