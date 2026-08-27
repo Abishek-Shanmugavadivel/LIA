@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LIA JARVIS Experience</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00F2FE">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Official LiveKit Client SDK for Browser WebRTC Audio -->
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+    <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.min.js"></script>
+
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at 50% 20%, #0B1021 0%, #050814 100%);
+            --card-bg: rgba(11, 16, 33, 0.65);
+            --card-border: 1px solid rgba(0, 242, 254, 0.2);
+            --card-shadow: 0 8px 32px 0 rgba(0, 242, 254, 0.15);
+            --accent-cyan: #00F2FE;
+            --accent-blue: #4FACFE;
+            --accent-glow: rgba(0, 242, 254, 0.5);
+            --text-primary: #F0F4F8;
+            --text-secondary: #8A99AD;
+            --orb-gradient: radial-gradient(circle, #00F2FE 0%, #0052D4 70%, #090B10 100%);
+        }
+
+        /* Black Glassmorphism Theme */
+        body.theme-glassmorphism {
+            --bg-gradient: radial-gradient(circle at 50% 20%, #121212 0%, #000000 100%);
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: 1px solid rgba(255, 255, 255, 0.12);
+            --card-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.8);
+            --accent-cyan: #E0E6ED;
+            --accent-blue: #9BA9B4;
+            --accent-glow: rgba(255, 255, 255, 0.25);
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --orb-gradient: radial-gradient(circle, #FFFFFF 0%, #4A5568 70%, #000000 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: var(--card-border);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            margin-bottom: 16px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            font-family: 'Orbitron', sans-serif;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #00F2FE 0%, #0052D4 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #050814;
+            font-size: 22px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #FFFFFF, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-icon:hover {
+            background: rgba(0, 242, 254, 0.2);
+            border-color: var(--accent-cyan);
+        }
+
+        .btn-connect {
+            background: linear-gradient(135deg, #00F2FE, #0052D4);
+            color: #050814;
+            font-weight: 700;
+            border: none;
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .btn-connect.active {
+            background: linear-gradient(135deg, #FF3366, #FF0055);
+            color: #FFFFFF;
+            box-shadow: 0 0 16px rgba(255, 51, 102, 0.5);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 320px 1fr;
+            }
+        }
+
+        /* JARVIS Mode Selector Pill Bar */
+        .modes-bar {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .mode-pill {
+            padding: 8px 18px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .mode-pill.active {
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.3), rgba(0, 82, 212, 0.4));
+            border-color: var(--accent-cyan);
+            color: #FFFFFF;
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        /* AI Orb Center Section */
+        .orb-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+        }
+
+        .orb-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .orb-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px dashed var(--accent-cyan);
+            animation: spin 12s linear infinite;
+            opacity: 0.6;
+        }
+
+        .orb-ring-1 { width: 210px; height: 210px; }
+        .orb-ring-2 { width: 240px; height: 240px; border-style: dotted; animation-duration: 20s; animation-direction: reverse; }
+
+        .ai-orb {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: var(--orb-gradient);
+            box-shadow: 0 0 50px var(--accent-cyan), inset 0 0 20px #FFFFFF;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-orb.listening {
+            animation: orbPulse 1.5s infinite ease-in-out;
+            box-shadow: 0 0 70px #00FF88, inset 0 0 30px #FFFFFF;
+        }
+
+        .ai-orb.thinking {
+            animation: orbSpin 2s infinite linear;
+            box-shadow: 0 0 70px #A855F7, inset 0 0 30px #FFFFFF;
+        }
+
+        .ai-orb.speaking {
+            animation: orbWave 1s infinite ease-in-out;
+            box-shadow: 0 0 80px #00F2FE, inset 0 0 40px #FFFFFF;
+        }
+
+        .ai-orb.error {
+            animation: orbPulse 1s infinite ease-in-out;
+            box-shadow: 0 0 70px #FF3366, inset 0 0 30px #FFFFFF;
+        }
+
+        /* Waveform Canvas */
+        canvas#waveCanvas {
+            width: 100%;
+            height: 40px;
+            margin-top: 10px;
+        }
+
+        .orb-status-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1.5px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            margin-top: 12px;
+            font-weight: 700;
+        }
+
+        /* Main Workspace Panels */
+        .workspace-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Telemetry & Devices Matrix Bar */
+        .telemetry-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 14px;
+        }
+
+        .telemetry-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .telemetry-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .telemetry-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-top: 4px;
+        }
+
+        /* Widgets Grid */
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .widget-box {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .widget-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-content {
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
+
+        /* Conversation Feed */
+        .chat-panel {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 240px;
+        }
+
+        .chat-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.4;
+            max-width: 85%;
+        }
+
+        .msg-bubble.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #0052D4, #4364F7);
+            color: #FFFFFF;
+        }
+
+        .msg-bubble.lia {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Input Controls */
+        .input-bar {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-bar input {
+            flex-grow: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #FFFFFF;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .input-bar button {
+            background: linear-gradient(135deg, #00F2FE, #0052D4);
+            border: none;
+            border-radius: 12px;
+            padding: 10px 18px;
+            color: #050814;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Voice Settings Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 400px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .voice-option {
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .voice-option.selected {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 242, 254, 0.15);
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes orbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+        @keyframes orbSpin { 100% { transform: rotate(360deg) scale(1.05); } }
+        @keyframes orbWave { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    </style>
+</head>
+<body class="theme-futuristic">
+
+    <!-- Header -->
+    <header class="glass-panel">
+        <div class="brand-container">
+            <div class="brand-logo">L</div>
+            <div class="brand-title">LIA JARVIS</div>
+        </div>
+        <div class="controls-group">
+            <button class="btn-icon btn-connect" id="btnConnect" onclick="toggleLIAConnection()">⚡ Connect LIA</button>
+            <button class="btn-icon" onclick="toggleTheme()">🎨 Theme</button>
+            <button class="btn-icon" onclick="openVoiceModal()">🎙️ Voice</button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+
+        <!-- Mode Selector Bar -->
+        <div class="modes-bar">
+            <div class="mode-pill active" onclick="setJarvisMode('coding', this)">⚡ Coding Mode</div>
+            <div class="mode-pill" onclick="setJarvisMode('study', this)">📚 Study Mode</div>
+            <div class="mode-pill" onclick="setJarvisMode('work', this)">💼 Work Mode</div>
+            <div class="mode-pill" onclick="setJarvisMode('entertainment', this)">🎮 Entertainment Mode</div>
+        </div>
+
+        <!-- Orb Visualizer Section -->
+        <div class="glass-panel orb-section">
+            <div class="orb-wrapper">
+                <div class="orb-ring orb-ring-1"></div>
+                <div class="orb-ring orb-ring-2"></div>
+                <div class="ai-orb" id="aiOrb" onclick="toggleLIAConnection()" title="Click to Connect/Disconnect LIA Voice Agent"></div>
+            </div>
+            <div class="orb-status-text" id="orbStatus">DISCONNECTED</div>
+            <canvas id="waveCanvas"></canvas>
+        </div>
+
+        <!-- Right Workspace Panel -->
+        <div class="workspace-panel">
+
+            <!-- Telemetry & Matrix Bar -->
+            <div class="glass-panel telemetry-bar">
+                <div class="telemetry-card">
+                    <div class="telemetry-label">CPU</div>
+                    <div class="telemetry-value" id="cpuVal">18%</div>
+                </div>
+                <div class="telemetry-card">
+                    <div class="telemetry-label">RAM</div>
+                    <div class="telemetry-value" id="ramVal">42%</div>
+                </div>
+                <div class="telemetry-card">
+                    <div class="telemetry-label">Battery</div>
+                    <div class="telemetry-value" id="batVal">88%</div>
+                </div>
+                <div class="telemetry-card">
+                    <div class="telemetry-label">Devices</div>
+                    <div class="telemetry-value" id="devVal">2 Online</div>
+                </div>
+            </div>
+
+            <!-- Widgets Grid -->
+            <div class="widgets-grid">
+                <div class="glass-panel widget-box">
+                    <div class="widget-title">📰 News Ticker</div>
+                    <div class="widget-content" id="newsBox">Fetching latest technology news...</div>
+                </div>
+                <div class="glass-panel widget-box">
+                    <div class="widget-title">⏰ Reminders</div>
+                    <div class="widget-content" id="remindersBox">Loading active reminders...</div>
+                </div>
+                <div class="glass-panel widget-box">
+                    <div class="widget-title">📅 Schedule</div>
+                    <div class="widget-content" id="calendarBox">Loading schedule...</div>
+                </div>
+                <div class="glass-panel widget-box">
+                    <div class="widget-title">🎵 Music Control</div>
+                    <div class="widget-content" style="display:flex; gap:8px; align-items:center;">
+                        <button class="btn-icon" onclick="controlMedia('previous')">⏮️</button>
+                        <button class="btn-icon" onclick="controlMedia('play')">▶️/⏸️</button>
+                        <button class="btn-icon" onclick="controlMedia('next')">⏭️</button>
+                    </div>
+                </div>
+                <div class="glass-panel widget-box" style="grid-column: 1 / -1; max-height: 180px;">
+                    <div class="widget-title">💻 Coding Agent Dashboard <span id="codingAgentState" style="color:var(--accent-cyan); font-size:11px;">[IDLE]</span></div>
+                    <div class="widget-content" id="codingAgentBox">
+                        <div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span>Project: <strong id="codingProjectName">LIA 5.0 (Python/Node)</strong></span>
+                            <span>Framework: <strong id="codingFramework">FastAPI / Python</strong></span>
+                        </div>
+                        <div style="font-size:12px; color:var(--text-secondary);" id="codingTaskDesc">
+                            Status: Ready for commands (e.g., "LIA, understand this project", "fix this error")
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel widget-box" style="grid-column: 1 / -1; max-height: 180px;">
+                    <div class="widget-title">👁️ Vision, Autonomous Task & Android Sync <span id="visionState" style="color:var(--accent-cyan); font-size:11px;">[ACTIVE]</span></div>
+                    <div class="widget-content" id="visionMatrixBox">
+                        <div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span>Vision & OCR: <strong>Active Window Analysis</strong></span>
+                            <span>Android Sync: <strong id="androidSyncStatus">Connected (HTTP/WS)</strong></span>
+                        </div>
+                        <div style="font-size:12px; color:var(--text-secondary);" id="taskAgentStatusDesc">
+                            Autonomous Goal Agent: Ready ("LIA, prepare project for deployment", "look at my screen")
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel widget-box" style="grid-column: 1 / -1; max-height: 180px;">
+                    <div class="widget-title">🧩 Plugin Registry & Personal Assistant <span id="pluginState" style="color:var(--accent-cyan); font-size:11px;">[2 ACTIVE PLUGINS]</span></div>
+                    <div class="widget-content" id="pluginMatrixBox">
+                        <div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span>Plugins: <strong>GitHub, Weather (Enabled)</strong></span>
+                            <span>Briefing: <strong style="color:var(--accent-cyan);">Ready ("LIA, give me my daily briefing")</strong></span>
+                        </div>
+                        <div style="font-size:12px; color:var(--text-secondary);" id="personalAssistantDesc">
+                            Personal Assistant: Calendar, Tasks (TODO/COMPLETED), Reminders, Smart Free-Time Scheduling
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat & Voice Input Feed -->
+            <div class="glass-panel chat-panel">
+                <div class="chat-history" id="chatHistory">
+                    <div class="msg-bubble lia">
+                        Greetings! I am LIA, your JARVIS Voice AI. Click "⚡ Connect LIA" to activate LiveKit WebRTC Voice in English, Tamil, or Tanglish.
+                    </div>
+                </div>
+                <div class="input-bar">
+                    <input type="text" id="userInput" placeholder="Type or say 'LIA Google open pannu'..." onkeypress="handleKeyPress(event)">
+                    <button onclick="sendUserPrompt()">Send</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Voice Configuration Modal -->
+    <div class="modal-overlay" id="voiceModal">
+        <div class="glass-panel modal-content">
+            <h3 style="color:var(--accent-cyan)">🎙️ Voice Settings</h3>
+            <p style="font-size:12px; color:var(--text-secondary)">Select AI Voice Profile (Default: Female Voice with natural Tamil/Tanglish pronunciation):</p>
+            
+            <div class="voice-option selected" id="vFemale" onclick="selectVoice('female')">
+                <div>
+                    <strong>Female Voice (Default)</strong>
+                    <div style="font-size:11px; color:var(--text-secondary)">Warm female voice with English, Tamil & Tanglish support</div>
+                </div>
+                <span>✓</span>
+            </div>
+
+            <div class="voice-option" id="vMale" onclick="selectVoice('male')">
+                <div>
+                    <strong>Male Voice</strong>
+                    <div style="font-size:11px; color:var(--text-secondary)">Crisp natural male AI voice</div>
+                </div>
+            </div>
+
+            <div class="voice-option" id="vCustom" onclick="selectVoice('custom')">
+                <div>
+                    <strong>Custom Voice Profile</strong>
+                    <div style="font-size:11px; color:var(--text-secondary)">Futuristic synthetic voice</div>
+                </div>
+            </div>
+
+            <button class="btn-icon" style="align-self:flex-end" onclick="closeVoiceModal()">Save & Close</button>
+        </div>
+    </div>
+
+    <script>
+        let livekitRoom = null;
+        let connectionStatus = 'DISCONNECTED'; // DISCONNECTED, CONNECTING, CONNECTED, LISTENING, SPEAKING, ERROR
+        let activeTheme = 'blue';
+        
+        let audioCtx = null;
+        let analyser = null;
+        let dataArray = null;
+
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW reg failed", err));
+        }
+
+        let reconnectAttempts = 0;
+        let reconnectTimer = null;
+
+        // LiveKit WebRTC Voice Connection Engine (Hands-Free JARVIS Mode)
+        async function connectToLIA() {
+            if (connectionStatus === 'CONNECTING' || connectionStatus === 'CONNECTED' || connectionStatus === 'LISTENING' || connectionStatus === 'SPEAKING') {
+                console.log('[LIA Mobile] Connection attempt ignored: already active.');
+                return;
+            }
+
+            const Livekit = window.LivekitClient || window.livekitclient || window.LiveKit;
+            if (!Livekit) {
+                updateUIState('ERROR', 'LIVEKIT SDK ERROR');
+                addMessage('lia', 'Error: LiveKit JavaScript SDK failed to load. Check internet connection.');
+                scheduleReconnect();
+                return;
+            }
+
+            try {
+                updateUIState('CONNECTING', 'LIA CONNECTING...');
+                console.log('[LIA Mobile] Requesting token');
+
+                const tokenResp = await fetch('/api/mobile/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        identity: 'mobile_user_' + Math.floor(Math.random() * 10000),
+                        room: 'lia_default_room'
+                    })
+                });
+
+                if (!tokenResp.ok) {
+                    throw new Error(`Token request failed with HTTP ${tokenResp.status}`);
+                }
+
+                const data = await tokenResp.json();
+                if (data.status !== 'success' || !data.token || !data.url) {
+                    throw new Error(data.message || 'Invalid token response received from backend.');
+                }
+
+                console.log('[LIA Mobile] Token received');
+                console.log('[LIA Mobile] Connecting');
+
+                // Create LiveKit Room instance
+                livekitRoom = new Livekit.Room({
+                    adaptiveStream: true,
+                    dynacast: true,
+                    audioCaptureDefaults: {
+                        autoGainControl: true,
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    }
+                });
+
+                // Attach Event Handlers
+                livekitRoom.on('trackSubscribed', (track, publication, participant) => {
+                    console.log('[LIA Mobile] Remote audio subscribed');
+                    console.log('[LIA Mobile] Remote audio track received');
+                    if (track.kind === 'audio' || (Livekit.Track && track.kind === Livekit.Track.Kind.Audio)) {
+                        const audioEl = track.attach();
+                        audioEl.id = 'lia-remote-audio-' + participant.sid;
+                        audioEl.autoplay = true;
+                        document.body.appendChild(audioEl);
+                        console.log('[LIA Mobile] Remote audio attached');
+
+                        // Ensure AudioContext is resumed
+                        if (audioCtx && audioCtx.state === 'suspended') {
+                            audioCtx.resume().catch(e => console.warn('[LIA Mobile] AudioContext resume note:', e));
+                        }
+
+                        audioEl.play().then(() => {
+                            console.log('[LIA Mobile] Remote audio playback started');
+                            updateUIState('SPEAKING', 'LIA SPEAKING');
+                            addMessage('lia', 'LIA is speaking...');
+                        }).catch(err => {
+                            console.error('[LIA Mobile] Remote audio playback failed:', err);
+                            updateUIState('CONNECTED', 'LIA ACTIVE ● Listening');
+                            addMessage('lia', 'Audio playback blocked by browser. Tap anywhere to enable speaker.');
+                            const resumePlayback = () => {
+                                audioEl.play().then(() => console.log('[LIA Mobile] Remote audio playback started')).catch(e => console.error(e));
+                            };
+                            document.addEventListener('click', resumePlayback, { once: true });
+                            document.addEventListener('touchstart', resumePlayback, { once: true });
+                        });
+                    }
+                });
+
+                livekitRoom.on('trackUnsubscribed', (track, publication, participant) => {
+                    console.log('[LIA Mobile] Remote track unsubscribed');
+                    track.detach().forEach(el => el.remove());
+                    if (connectionStatus === 'SPEAKING') {
+                        updateUIState('LISTENING', 'LIA ACTIVE ● Listening');
+                    }
+                });
+
+                livekitRoom.on('participantConnected', (participant) => {
+                    console.log('[LIA Mobile] Participant connected:', participant.identity);
+                    addMessage('lia', `LIA Agent (${participant.identity}) joined the room.`);
+                });
+
+                livekitRoom.on('participantDisconnected', (participant) => {
+                    console.log('[LIA Mobile] Participant disconnected:', participant.identity);
+                });
+
+                livekitRoom.on('connectionStateChanged', (state) => {
+                    console.log('[LIA Mobile] ConnectionStateChanged:', state);
+                    if (state === 'connected' || (Livekit.ConnectionState && state === Livekit.ConnectionState.Connected)) {
+                        reconnectAttempts = 0;
+                        updateUIState('LISTENING', 'LIA ACTIVE ● Listening');
+                    } else if (state === 'disconnected' || (Livekit.ConnectionState && state === Livekit.ConnectionState.Disconnected)) {
+                        updateUIState('RECONNECTING', 'LIA RECONNECTING...');
+                        scheduleReconnect();
+                    } else if (state === 'reconnecting' || (Livekit.ConnectionState && state === Livekit.ConnectionState.Reconnecting)) {
+                        updateUIState('RECONNECTING', 'LIA RECONNECTING...');
+                    }
+                });
+
+                livekitRoom.on('disconnected', (reason) => {
+                    console.log('[LIA Mobile] Disconnected from room. Reason:', reason);
+                    cleanupAudioElements();
+                    updateUIState('RECONNECTING', 'LIA RECONNECTING...');
+                    scheduleReconnect();
+                });
+
+                // Connect to LiveKit Server
+                await livekitRoom.connect(data.url, data.token);
+                console.log('[LIA Mobile] Connected');
+
+                // Request microphone permission & publish audio track
+                console.log('[LIA Mobile] Requesting microphone permission...');
+                await livekitRoom.localParticipant.setMicrophoneEnabled(true);
+                console.log('[LIA Mobile] Microphone published');
+
+                // Setup Web Audio API visualizer from live microphone track
+                setupMicrophoneAudioVisualizer(livekitRoom);
+
+                reconnectAttempts = 0;
+                updateUIState('LISTENING', 'LIA ACTIVE ● Listening');
+                addMessage('lia', 'JARVIS Hands-Free Mode Active. Microphone is listening.');
+
+            } catch (err) {
+                console.error('[LIA Mobile] LiveKit connection error:', err);
+                updateUIState('ERROR', 'CONNECTION ERROR');
+                scheduleReconnect();
+            }
+        }
+
+        function scheduleReconnect() {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectAttempts++;
+            const backoffMs = Math.min(5000, Math.pow(2, reconnectAttempts - 1) * 1000);
+            console.log(`[LIA Mobile] Scheduling reconnect attempt #${reconnectAttempts} in ${backoffMs}ms...`);
+            reconnectTimer = setTimeout(() => {
+                if (connectionStatus !== 'CONNECTED' && connectionStatus !== 'LISTENING' && connectionStatus !== 'SPEAKING') {
+                    connectToLIA();
+                }
+            }, backoffMs);
+        }
+
+        async function disconnectFromLIA() {
+            if (livekitRoom) {
+                try {
+                    console.log('[LIA Mobile] Disconnecting LiveKit room...');
+                    await livekitRoom.localParticipant.setMicrophoneEnabled(false);
+                    await livekitRoom.disconnect();
+                } catch (e) {
+                    console.warn('[LIA Mobile] Error during disconnect:', e);
+                }
+                livekitRoom = null;
+            }
+            cleanupAudioElements();
+            updateUIState('DISCONNECTED', 'DISCONNECTED');
+        }
+
+        async function toggleLIAConnection() {
+            if (connectionStatus === 'DISCONNECTED' || connectionStatus === 'ERROR') {
+                await connectToLIA();
+            } else {
+                await disconnectFromLIA();
+            }
+        }
+
+        function cleanupAudioElements() {
+            document.querySelectorAll('audio[id^="lia-remote-audio-"]').forEach(el => el.remove());
+        }
+
+        // Real Microphone Audio Visualizer powered by Web Audio API
+        function setupMicrophoneAudioVisualizer(room) {
+            try {
+                const localTracks = Array.from(room.localParticipant.audioTrackPublications.values());
+                if (localTracks.length > 0 && localTracks[0].track) {
+                    const mediaStreamTrack = localTracks[0].track.mediaStreamTrack;
+                    if (mediaStreamTrack) {
+                        const stream = new MediaStream([mediaStreamTrack]);
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const source = audioCtx.createMediaStreamSource(stream);
+                        analyser = audioCtx.createAnalyser();
+                        analyser.fftSize = 64;
+                        source.connect(analyser);
+                        dataArray = new Uint8Array(analyser.frequencyBinCount);
+                        console.log('[LIA Mobile] Real microphone audio visualizer initialized.');
+                    }
+                }
+            } catch (e) {
+                console.warn('[LIA Mobile] Audio visualizer setup warning:', e);
+            }
+        }
+
+        // Orb & Status UI State Manager
+        function updateUIState(status, labelText) {
+            connectionStatus = status;
+            const orb = document.getElementById('aiOrb');
+            const statusText = document.getElementById('orbStatus');
+            const btnConnect = document.getElementById('btnConnect');
+
+            let cssClass = 'ai-orb ';
+            let orbLabel = labelText || status;
+
+            if (status === 'CONNECTED' || status === 'LISTENING') {
+                cssClass += 'listening';
+                if (btnConnect) {
+                    btnConnect.innerHTML = '🔴 Disconnect';
+                    btnConnect.classList.add('active');
+                }
+            } else if (status === 'CONNECTING') {
+                cssClass += 'thinking';
+                if (btnConnect) {
+                    btnConnect.innerHTML = '⏳ Connecting...';
+                    btnConnect.classList.remove('active');
+                }
+            } else if (status === 'SPEAKING') {
+                cssClass += 'speaking';
+                if (btnConnect) {
+                    btnConnect.innerHTML = '🔴 Disconnect';
+                    btnConnect.classList.add('active');
+                }
+            } else if (status === 'ERROR') {
+                cssClass += 'error';
+                if (btnConnect) {
+                    btnConnect.innerHTML = '⚠️ Retry Connect';
+                    btnConnect.classList.remove('active');
+                }
+            } else {
+                // DISCONNECTED / IDLE
+                if (btnConnect) {
+                    btnConnect.innerHTML = '⚡ Connect LIA';
+                    btnConnect.classList.remove('active');
+                }
+            }
+
+            if (orb) orb.className = cssClass;
+            if (statusText) statusText.innerText = orbLabel;
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            if (activeTheme === 'blue') {
+                document.body.className = 'theme-glassmorphism';
+                activeTheme = 'black';
+            } else {
+                document.body.className = 'theme-futuristic';
+                activeTheme = 'blue';
+            }
+        }
+
+        // Voice Modal
+        function openVoiceModal() { document.getElementById('voiceModal').style.display = 'flex'; }
+        function closeVoiceModal() { document.getElementById('voiceModal').style.display = 'none'; }
+        
+        async function selectVoice(vType) {
+            document.querySelectorAll('.voice-option').forEach(el => el.classList.remove('selected'));
+            if (vType === 'female') document.getElementById('vFemale').classList.add('selected');
+            if (vType === 'male') document.getElementById('vMale').classList.add('selected');
+            if (vType === 'custom') document.getElementById('vCustom').classList.add('selected');
+
+            try {
+                await fetch('/api/mobile/voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voice_type: vType })
+                });
+                addMessage('lia', `Voice settings updated to: ${vType.toUpperCase()}`);
+            } catch (e) { console.error(e); }
+        }
+
+        // JARVIS Modes
+        async function setJarvisMode(modeName, el) {
+            document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+
+            try {
+                const res = await fetch('/api/mobile/mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: modeName })
+                });
+                const data = await res.json();
+                addMessage('lia', data.message || `Activated ${modeName.toUpperCase()} Mode.`);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Chat & Real Server Commands via /api/mobile/command
+        async function sendUserPrompt() {
+            const input = document.getElementById('userInput');
+            const val = input.value.trim();
+            if (!val) return;
+            addMessage('user', val);
+            input.value = '';
+
+            try {
+                const res = await fetch('/api/mobile/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: val })
+                });
+                const data = await res.json();
+                let replyMsg = 'Done.';
+                if (data.status === 'success' && data.result) {
+                    replyMsg = typeof data.result === 'string' ? data.result : (data.result.message || JSON.stringify(data.result));
+                } else if (data.message) {
+                    replyMsg = data.message;
+                }
+                addMessage('lia', replyMsg);
+            } catch (err) {
+                console.error('[LIA Mobile] Command error:', err);
+                addMessage('lia', 'Error executing command: ' + err.message);
+            }
+        }
+
+        function handleKeyPress(e) { if (e.key === 'Enter') sendUserPrompt(); }
+
+        function addMessage(sender, text) {
+            const history = document.getElementById('chatHistory');
+            const bubble = document.createElement('div');
+            bubble.className = `msg-bubble ${sender}`;
+            bubble.innerText = text;
+            history.appendChild(bubble);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        // Media Control API
+        async function controlMedia(action) {
+            addMessage('user', `Media Action: ${action}`);
+            try {
+                await fetch('/api/mobile/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: `media ${action}` })
+                });
+                addMessage('lia', `Media control triggered: ${action}`);
+            } catch (e) {
+                addMessage('lia', `Media action sent: ${action}`);
+            }
+        }
+
+        // Dashboard Data Refresh
+        async function loadDashboardData() {
+            try {
+                // News
+                const resNews = await fetch('/api/mobile/news');
+                const dNews = await resNews.json();
+                if (dNews.news) document.getElementById('newsBox').innerText = dNews.news.substring(0, 140) + '...';
+
+                // Reminders
+                const resRem = await fetch('/api/mobile/reminders');
+                const dRem = await resRem.json();
+                if (dRem.reminders) document.getElementById('remindersBox').innerText = dRem.reminders;
+
+                // Calendar
+                const resCal = await fetch('/api/mobile/calendar');
+                const dCal = await resCal.json();
+                if (dCal.calendar) document.getElementById('calendarBox').innerText = dCal.calendar;
+            } catch (e) { console.log("Dashboard sync error", e); }
+        }
+
+        // Waveform Visualizer Canvas Animation driven by Web Audio API
+        function initWaveform() {
+            const canvas = document.getElementById('waveCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let step = 0;
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.lineWidth = 2;
+
+                let strokeColor = '#00F2FE';
+                let amplitude = 3;
+
+                if (connectionStatus === 'CONNECTED' || connectionStatus === 'LISTENING') {
+                    strokeColor = '#00FF88';
+                    amplitude = 6;
+                } else if (connectionStatus === 'SPEAKING') {
+                    strokeColor = '#00F2FE';
+                    amplitude = 14;
+                } else if (connectionStatus === 'CONNECTING') {
+                    strokeColor = '#A855F7';
+                    amplitude = 8;
+                } else if (connectionStatus === 'ERROR') {
+                    strokeColor = '#FF3366';
+                    amplitude = 4;
+                }
+
+                // If real microphone audio data exists, modulate amplitude by volume average
+                if (analyser && dataArray && (connectionStatus === 'CONNECTED' || connectionStatus === 'LISTENING' || connectionStatus === 'SPEAKING')) {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                    let avg = sum / dataArray.length;
+                    amplitude = Math.max(3, (avg / 255.0) * 25.0);
+                }
+
+                ctx.strokeStyle = strokeColor;
+
+                for (let x = 0; x < canvas.width; x++) {
+                    const y = canvas.height / 2 + Math.sin((x + step) * 0.05) * amplitude;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                step += 2;
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        window.onload = () => {
+            initWaveform();
+            loadDashboardData();
+            
+            // Automatically connect to LIA on page load for hands-free mode
+            connectToLIA();
+
+            // Add global one-touch unlock listener for browser autoplay restrictions
+            const unlockAudio = () => {
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume().then(() => console.log('[LIA Mobile] AudioContext unlocked via user gesture.')).catch(e => console.warn(e));
+                }
+                if (connectionStatus !== 'CONNECTED' && connectionStatus !== 'LISTENING' && connectionStatus !== 'SPEAKING') {
+                    connectToLIA();
+                }
+            };
+            document.addEventListener('click', unlockAudio, { once: false });
+            document.addEventListener('touchstart', unlockAudio, { once: false });
+        };
+    </script>
+</body>
+</html>

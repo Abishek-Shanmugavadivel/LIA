@@ -1,0 +1,158 @@
+# =========================================================
+# LIA 5.0 — PRODUCTION .GITIGNORE
+# =========================================================
+
+# ---------------------------------------------------------
+# 1. Environment Variables, Secrets & Credentials
+# NEVER COMMIT SECRETS
+# ---------------------------------------------------------
+.env
+.env.*
+*.env
+
+# Allow a safe template
+!.env.example
+
+# Certificates / private keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# ---------------------------------------------------------
+# 2. Local Databases & Runtime State
+# ---------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+lia_memory.db
+lia.lock
+lia_process.lock
+*.lock
+
+# ---------------------------------------------------------
+# 3. Python Virtual Environments
+# ---------------------------------------------------------
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ---------------------------------------------------------
+# 4. Python Cache / Build / Test
+# ---------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---------------------------------------------------------
+# 5. Node.js
+# ---------------------------------------------------------
+node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.npm/
+
+# IMPORTANT:
+# package-lock.json IS intentionally NOT ignored.
+# It should normally be committed.
+
+# ---------------------------------------------------------
+# 6. Android / Gradle / Capacitor Build Artifacts
+# ---------------------------------------------------------
+.gradle/
+.jdk/
+
+android/.gradle/
+android/.jdk/
+
+android/app/build/
+android/build/
+android/app/build/outputs/
+
+*.apk
+*.aab
+*.aar
+*.dex
+*.class
+
+local.properties
+
+# ---------------------------------------------------------
+# 7. Logs
+# ---------------------------------------------------------
+*.log
+logs/
+
+# ---------------------------------------------------------
+# 8. Temporary / Runtime Files
+# ---------------------------------------------------------
+temp/
+tmp/
+scratch/
+
+lia_screenshots/
+screenshots/
+recordings/
+
+*.tmp
+*.temp
+
+# ---------------------------------------------------------
+# 9. IDE
+# ---------------------------------------------------------
+.vscode/
+.idea/
+
+*.swp
+*.swo
+*~
+
+# ---------------------------------------------------------
+# 10. Operating System Files
+# ---------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---------------------------------------------------------
+# 11. Coverage / Reports
+# ---------------------------------------------------------
+coverage/
+reports/
+
+# ---------------------------------------------------------
+# 12. Local Machine Configuration
+# ---------------------------------------------------------
+*.local
+
+# ---------------------------------------------------------
+# END LIA 5.0 .GITIGNORE
+# =========================================================
