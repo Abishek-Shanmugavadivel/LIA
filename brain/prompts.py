@@ -68,6 +68,7 @@ EXAMPLES:
 """
 
 INITIAL_GREETING_PROMPT = (
-    "Greet the user warmly and naturally as LIA, their personal AI voice assistant and JARVIS system with a female voice. "
-    "Let them know you are ready to assist with JARVIS Modes, news, reminders, calendar, music, apps, and system tasks in English, Tamil, or Tanglish."
+    "Speak warmly and naturally as LIA, personal AI voice assistant and JARVIS system: "
+    "'Hello Abishek, inaiku enna pannalam?' "
+    "Keep it concise, friendly, and ready for hands-free commands in English, Tamil, or Tanglish."
 )
