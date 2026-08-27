@@ -4,17 +4,12 @@ LIA 5.0 Tools Package
 Cross-platform tool registry.
 
 Windows:
-    Enables the complete JARVIS desktop experience:
-    - Desktop/application control
-    - Browser automation
-    - Screen capture/vision
-    - Mouse/keyboard
-    - Startup management
+    Full JARVIS desktop capabilities are enabled.
 
-Linux/Render:
-    Enables cloud-safe tools only.
-    Windows GUI tools are NOT imported, preventing failures
-    caused by pyautogui, pygetwindow, DISPLAY, Win32 APIs, etc.
+Linux / Render:
+    Cloud-safe tools are loaded.
+    Desktop GUI tools are intentionally not imported because
+    Render has no Windows desktop or DISPLAY server.
 """
 
 import platform
@@ -26,7 +21,7 @@ IS_WINDOWS = platform.system().lower() == "windows"
 
 
 # =========================================================
-# SAFE / CLOUD-COMPATIBLE TOOLS
+# CLOUD-SAFE TOOLS
 # =========================================================
 
 from tools.web_search import (
@@ -54,22 +49,6 @@ from tools.mobile import (
     send_mobile_notification,
     get_device_list,
     route_device_command,
-)
-
-from tools.media import (
-    play_music,
-    control_media,
-)
-
-from tools.whatsapp import (
-    open_whatsapp,
-    prepare_whatsapp_message,
-    send_whatsapp_message,
-)
-
-from tools.contacts_calling import (
-    find_contact,
-    prepare_phone_call,
 )
 
 from tools.notifications import (
@@ -120,17 +99,17 @@ from tools.voice_tools import (
 
 
 # =========================================================
-# WINDOWS-ONLY GUI TOOLS
+# WINDOWS-ONLY DESKTOP / GUI TOOLS
 # =========================================================
 
 if IS_WINDOWS:
 
     logger.info(
-        "Windows detected: loading full LIA desktop tools."
+        "Windows detected. Loading full desktop JARVIS tools."
     )
 
     # -----------------------------------------------------
-    # Desktop / Application Control
+    # Desktop
     # -----------------------------------------------------
 
     from tools.desktop import (
@@ -182,7 +161,35 @@ if IS_WINDOWS:
     )
 
     # -----------------------------------------------------
-    # Desktop Startup
+    # Media
+    # -----------------------------------------------------
+
+    from tools.media import (
+        play_music,
+        control_media,
+    )
+
+    # -----------------------------------------------------
+    # WhatsApp
+    # -----------------------------------------------------
+
+    from tools.whatsapp import (
+        open_whatsapp,
+        prepare_whatsapp_message,
+        send_whatsapp_message,
+    )
+
+    # -----------------------------------------------------
+    # Contacts / Calling
+    # -----------------------------------------------------
+
+    from tools.contacts_calling import (
+        find_contact,
+        prepare_phone_call,
+    )
+
+    # -----------------------------------------------------
+    # Startup
     # -----------------------------------------------------
 
     from tools.startup import (
@@ -192,8 +199,8 @@ if IS_WINDOWS:
 else:
 
     logger.info(
-        "Non-Windows platform detected (%s): "
-        "Windows GUI tools disabled.",
+        "Non-Windows platform detected (%s). "
+        "Desktop GUI tools disabled.",
         platform.system(),
     )
 
@@ -203,15 +210,12 @@ else:
 # =========================================================
 
 ALL_LIA_TOOLS = [
+
     # -----------------------------------------------------
-    # Web Intelligence
+    # Web
     # -----------------------------------------------------
 
     web_search,
-
-    # -----------------------------------------------------
-    # Browser (safe website opening)
-    # -----------------------------------------------------
 
     open_website,
 
@@ -240,28 +244,6 @@ ALL_LIA_TOOLS = [
     route_device_command,
 
     # -----------------------------------------------------
-    # Media
-    # -----------------------------------------------------
-
-    play_music,
-    control_media,
-
-    # -----------------------------------------------------
-    # WhatsApp
-    # -----------------------------------------------------
-
-    open_whatsapp,
-    prepare_whatsapp_message,
-    send_whatsapp_message,
-
-    # -----------------------------------------------------
-    # Contacts / Calling
-    # -----------------------------------------------------
-
-    find_contact,
-    prepare_phone_call,
-
-    # -----------------------------------------------------
     # Notifications
     # -----------------------------------------------------
 
@@ -287,18 +269,30 @@ ALL_LIA_TOOLS = [
     manage_file,
 
     # -----------------------------------------------------
-    # JARVIS Expansion
+    # News
     # -----------------------------------------------------
 
     get_news,
+
+    # -----------------------------------------------------
+    # Reminders
+    # -----------------------------------------------------
 
     create_reminder,
     get_reminders,
     cancel_reminder,
 
+    # -----------------------------------------------------
+    # Calendar
+    # -----------------------------------------------------
+
     get_calendar_events,
     add_calendar_event,
     delete_calendar_event,
+
+    # -----------------------------------------------------
+    # JARVIS Mode
+    # -----------------------------------------------------
 
     activate_jarvis_mode,
 
@@ -312,13 +306,14 @@ ALL_LIA_TOOLS = [
 
 
 # =========================================================
-# ADD WINDOWS TOOLS ONLY ON WINDOWS
+# WINDOWS TOOL REGISTRATION
 # =========================================================
 
 if IS_WINDOWS:
 
     ALL_LIA_TOOLS.extend(
         [
+
             # Desktop
             open_application,
             close_application,
@@ -330,7 +325,7 @@ if IS_WINDOWS:
             search_google,
             navigate_browser,
 
-            # Screen / vision
+            # Screen
             take_screenshot,
             analyze_screen,
             get_active_application,
@@ -346,6 +341,19 @@ if IS_WINDOWS:
             press_key,
             press_hotkey,
 
+            # Media
+            play_music,
+            control_media,
+
+            # WhatsApp
+            open_whatsapp,
+            prepare_whatsapp_message,
+            send_whatsapp_message,
+
+            # Contacts
+            find_contact,
+            prepare_phone_call,
+
             # Startup
             configure_desktop_startup,
         ]
@@ -357,95 +365,38 @@ if IS_WINDOWS:
 # =========================================================
 
 __all__ = [
-    # -----------------------------------------------------
-    # Web
-    # -----------------------------------------------------
-
     "web_search",
     "perform_web_search",
 
-    # -----------------------------------------------------
-    # Browser
-    # -----------------------------------------------------
-
     "open_website",
 
-    # -----------------------------------------------------
-    # System
-    # -----------------------------------------------------
-
     "get_system_information",
-
-    # -----------------------------------------------------
-    # Memory
-    # -----------------------------------------------------
 
     "remember_information",
     "recall_memory",
     "list_all_memories",
     "forget_memory",
 
-    # -----------------------------------------------------
-    # Mobile
-    # -----------------------------------------------------
-
     "get_mobile_status",
     "send_mobile_notification",
     "get_device_list",
     "route_device_command",
 
-    # -----------------------------------------------------
-    # Media
-    # -----------------------------------------------------
-
-    "play_music",
-    "control_media",
-
-    # -----------------------------------------------------
-    # WhatsApp
-    # -----------------------------------------------------
-
-    "open_whatsapp",
-    "prepare_whatsapp_message",
-    "send_whatsapp_message",
-
-    # -----------------------------------------------------
-    # Contacts / Calling
-    # -----------------------------------------------------
-
-    "find_contact",
-    "prepare_phone_call",
-
-    # -----------------------------------------------------
-    # Notifications
-    # -----------------------------------------------------
-
     "read_notifications",
     "get_latest_notification",
-
-    # -----------------------------------------------------
-    # Email
-    # -----------------------------------------------------
 
     "open_email_client",
     "search_emails",
     "draft_email",
     "send_email",
 
-    # -----------------------------------------------------
-    # Files
-    # -----------------------------------------------------
-
     "find_file",
     "open_file",
     "create_folder",
     "manage_file",
 
-    # -----------------------------------------------------
-    # JARVIS
-    # -----------------------------------------------------
-
     "get_news",
+
     "create_reminder",
     "get_reminders",
     "cancel_reminder",
@@ -456,18 +407,10 @@ __all__ = [
 
     "activate_jarvis_mode",
 
-    # -----------------------------------------------------
-    # Voice
-    # -----------------------------------------------------
-
     "get_voice_settings",
     "change_voice_setting",
     "perform_get_voice_settings",
     "perform_change_voice_setting",
-
-    # -----------------------------------------------------
-    # Registry
-    # -----------------------------------------------------
 
     "ALL_LIA_TOOLS",
 ]
@@ -481,45 +424,50 @@ if IS_WINDOWS:
 
     __all__.extend(
         [
-            # Desktop
+
             "open_application",
             "close_application",
             "open_folder",
             "manage_window",
 
-            # Browser automation
             "open_url",
             "search_google",
             "navigate_browser",
 
-            # Screen
             "take_screenshot",
             "analyze_screen",
             "get_active_application",
 
-            # Mouse
             "move_mouse",
             "click_mouse",
             "double_click_mouse",
             "right_click_mouse",
 
-            # Keyboard
             "type_text",
             "press_key",
             "press_hotkey",
 
-            # Startup
+            "play_music",
+            "control_media",
+
+            "open_whatsapp",
+            "prepare_whatsapp_message",
+            "send_whatsapp_message",
+
+            "find_contact",
+            "prepare_phone_call",
+
             "configure_desktop_startup",
         ]
     )
 
 
 # =========================================================
-# STARTUP DIAGNOSTIC
+# DIAGNOSTIC
 # =========================================================
 
 logger.info(
-    "LIA tools initialized. Platform=%s, Windows=%s, Tools=%d",
+    "LIA tools initialized | Platform=%s | Windows=%s | Tools=%d",
     platform.system(),
     IS_WINDOWS,
     len(ALL_LIA_TOOLS),
